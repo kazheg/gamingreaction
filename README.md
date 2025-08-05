@@ -67,5 +67,5 @@ Pixel character design inspired by retro arcade aesthetics.
 
 ## 🔗 Live Demo
 
-[🔗 Play the Game Online](#) 
+[🔗 Play the Game Online](#https://kazheg.github.io/gamingreaction) 
 
