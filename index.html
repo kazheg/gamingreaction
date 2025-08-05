@@ -1,0 +1,648 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta-viewport="width=device-width, initial-scale=1.0">
+    <title>Quick Reaction Test - Retro Style</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(45deg, #1a0033, #330066);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #00ff00;
+            overflow-x: hidden;
+        }
+        
+        .game-container {
+            text-align: center;
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .title {
+            font-size: clamp(16px, 4vw, 32px);
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff00; }
+            to { text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
+        }
+        
+        .game-area {
+            background: #000033;
+            border: 4px solid #00ffff;
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin: 20px 0;
+            position: relative;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .game-area.ready {
+            background: #003300;
+            border-color: #00ff00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+        }
+        
+        .character {
+            width: 120px;
+            height: 120px;
+            margin: 20px 0;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .character-sprite {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: 3px solid #ffffff;
+            border-radius: 10px;
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+        
+        .character-sprite.talking {
+            animation: talk 0.5s ease-in-out;
+        }
+        
+        @keyframes talk {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1) rotate(2deg); }
+        }
+        
+        .character-sprite::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            width: 15px;
+            height: 15px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 35px 0 0 #ffffff;
+        }
+        
+        .character-sprite::after {
+            content: '';
+            position: absolute;
+            bottom: 30px;
+            left: 35px;
+            width: 30px;
+            height: 15px;
+            background: #000000;
+            border-radius: 15px;
+            transition: height 0.2s ease;
+        }
+        
+        .character-sprite.talking::after {
+            height: 25px;
+        }
+        
+        .speech-bubble {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            color: #000033;
+            padding: 15px 20px;
+            border-radius: 20px;
+            border: 3px solid #00ffff;
+            font-size: 12px;
+            min-width: 200px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        
+        .speech-bubble.show {
+            opacity: 1;
+        }
+        
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 15px solid #ffffff;
+        }
+        
+        .controls {
+            margin: 30px 0;
+        }
+        
+        .btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            padding: 15px 30px;
+            margin: 10px;
+            background: linear-gradient(45deg, #ff0080, #8000ff);
+            color: #ffffff;
+            border: 3px solid #ffffff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 0, 128, 0.5);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            font-size: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            color: #00ff00;
+            margin-top: 5px;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 10px;
+            }
+            
+            .character {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .speech-bubble {
+                font-size: 10px;
+                min-width: 150px;
+                padding: 10px 15px;
+            }
+            
+            .btn {
+                font-size: 12px;
+                padding: 12px 20px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+        
+        .pixel-effect {
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        .customization-panel {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .customization-panel h3 {
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00ffff;
+        }
+        
+        .color-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .option-group {
+            text-align: center;
+        }
+        
+        .option-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        
+        .color-buttons, .theme-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .color-btn, .theme-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 10px 15px;
+            border: 2px solid #ffffff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+        
+        .color-btn:hover, .theme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        }
+        
+        .color-btn.active, .theme-btn.active {
+            border-color: #ffff00;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+        }
+        
+        .theme-btn {
+            background: linear-gradient(45deg, #ff0080, #8000ff);
+        }
+        
+        /* Theme variations */
+        body.neon {
+            background: linear-gradient(45deg, #000000, #1a001a);
+            color: #ff00ff;
+        }
+        
+        body.neon .title {
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff;
+        }
+        
+        body.neon .game-area {
+            background: #001a1a;
+            border-color: #ff00ff;
+        }
+        
+        body.neon .customization-panel {
+            border-color: #ff00ff;
+        }
+        
+        body.cyber {
+            background: linear-gradient(45deg, #0d1b2a, #1b263b);
+            color: #00d4ff;
+        }
+        
+        body.cyber .title {
+            color: #00d4ff;
+            text-shadow: 0 0 20px #00d4ff;
+        }
+        
+        body.cyber .game-area {
+            background: #0f1419;
+            border-color: #00d4ff;
+        }
+        
+        body.cyber .customization-panel {
+            border-color: #00d4ff;
+        }
+        
+        body.sunset {
+            background: linear-gradient(45deg, #2d1b69, #11998e);
+            color: #ff6b6b;
+        }
+        
+        body.sunset .title {
+            color: #ff6b6b;
+            text-shadow: 0 0 20px #ff6b6b;
+        }
+        
+        body.sunset .game-area {
+            background: #1a1a2e;
+            border-color: #ff6b6b;
+        }
+        
+        body.sunset .customization-panel {
+            border-color: #ff6b6b;
+        }
+        
+        @media (max-width: 768px) {
+            .color-buttons, .theme-buttons {
+                gap: 5px;
+            }
+            
+            .color-btn, .theme-btn {
+                font-size: 8px;
+                padding: 8px 12px;
+            }
+            
+            .customization-panel h3 {
+                font-size: 12px;
+            }
+            
+            .color-options {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">⚡ QUICK REACTION TEST ⚡</h1>
+        
+        <div class="instructions">
+            Click START → Wait for your chosen color → Click the character as FAST as possible!<br>
+            Don't click too early or you'll get penalized!
+        </div>
+        
+        <div class="customization-panel">
+            <h3>🎨 Customize Your Game</h3>
+            <div class="color-options">
+                <div class="option-group">
+                    <label>Reaction Color:</label>
+                    <div class="color-buttons">
+                        <button class="color-btn active" data-color="green" style="background: #00ff00;" onclick="setReactionColor('green')">Green</button>
+                        <button class="color-btn" data-color="red" style="background: #ff0040;" onclick="setReactionColor('red')">Red</button>
+                        <button class="color-btn" data-color="blue" style="background: #0080ff;" onclick="setReactionColor('blue')">Blue</button>
+                        <button class="color-btn" data-color="yellow" style="background: #ffff00; color: #000;" onclick="setReactionColor('yellow')">Yellow</button>
+                        <button class="color-btn" data-color="purple" style="background: #8000ff;" onclick="setReactionColor('purple')">Purple</button>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label>Theme:</label>
+                    <div class="theme-buttons">
+                        <button class="theme-btn active" data-theme="retro" onclick="setTheme('retro')">🌈 Retro</button>
+                        <button class="theme-btn" data-theme="neon" onclick="setTheme('neon')">⚡ Neon</button>
+                        <button class="theme-btn" data-theme="cyber" onclick="setTheme('cyber')">🤖 Cyber</button>
+                        <button class="theme-btn" data-theme="sunset" onclick="setTheme('sunset')">🌅 Sunset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-area" id="gameArea">
+            <div class="character" id="character">
+                <div class="character-sprite pixel-effect" id="characterSprite"></div>
+                <div class="speech-bubble" id="speechBubble">
+                    Ready to test your reflexes? 🎮
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="startBtn" onclick="startGame()">Start Game</button>
+            <button class="btn" id="tryAgainBtn" onclick="resetGame()" style="display: none;">Try Again</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div>Last Reaction</div>
+                <div class="stat-value" id="lastTime">---</div>
+            </div>
+            <div class="stat-item">
+                <div>Best Time</div>
+                <div class="stat-value" id="bestTime">---</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = 'waiting'; // waiting, ready, clicked, finished
+        let startTime = 0;
+        let timeoutId = null;
+        let bestTime = localStorage.getItem('bestReactionTime') || null;
+        let currentReactionColor = 'green';
+        let currentTheme = 'retro';
+        
+        const gameArea = document.getElementById('gameArea');
+        const character = document.getElementById('character');
+        const characterSprite = document.getElementById('characterSprite');
+        const speechBubble = document.getElementById('speechBubble');
+        const startBtn = document.getElementById('startBtn');
+        const tryAgainBtn = document.getElementById('tryAgainBtn');
+        const lastTimeDisplay = document.getElementById('lastTime');
+        const bestTimeDisplay = document.getElementById('bestTime');
+        
+        // Initialize best time display
+        if (bestTime) {
+            bestTimeDisplay.textContent = bestTime + 'ms';
+        }
+        
+        function showSpeechBubble(message, duration = 3000) {
+            speechBubble.textContent = message;
+            speechBubble.classList.add('show');
+            characterSprite.classList.add('talking');
+            
+            setTimeout(() => {
+                speechBubble.classList.remove('show');
+                characterSprite.classList.remove('talking');
+            }, duration);
+        }
+        
+        function startGame() {
+            gameState = 'waiting';
+            startBtn.style.display = 'none';
+            tryAgainBtn.style.display = 'none';
+            gameArea.classList.remove('ready');
+            
+            showSpeechBubble('Get ready... wait for it... 🎯', 2000);
+            
+            // Random delay between 2-5 seconds
+            const delay = Math.random() * 3000 + 2000;
+            
+            timeoutId = setTimeout(() => {
+                if (gameState === 'waiting') {
+                    gameState = 'ready';
+                    applyReactionColor();
+                    startTime = Date.now();
+                    showSpeechBubble('NOW! Click me! ⚡', 1000);
+                }
+            }, delay);
+        }
+        
+        function handleClick() {
+            if (gameState === 'waiting') {
+                // Clicked too early
+                gameState = 'finished';
+                clearTimeout(timeoutId);
+                resetGameAreaColor();
+                showSpeechBubble(`Too soon! 😅 Wait for the ${currentReactionColor} background!`, 4000);
+                showTryAgain();
+            } else if (gameState === 'ready') {
+                // Valid click
+                gameState = 'clicked';
+                const reactionTime = Date.now() - startTime;
+                resetGameAreaColor();
+                
+                // Update last time
+                lastTimeDisplay.textContent = reactionTime + 'ms';
+                
+                // Check and update best time
+                if (!bestTime || reactionTime < parseInt(bestTime)) {
+                    bestTime = reactionTime.toString();
+                    localStorage.setItem('bestReactionTime', bestTime);
+                    bestTimeDisplay.textContent = bestTime + 'ms';
+                    showSpeechBubble(`NEW RECORD! ${reactionTime}ms! 🏆`, 4000);
+                } else {
+                    // Give encouraging feedback based on reaction time
+                    let message = '';
+                    if (reactionTime < 200) {
+                        message = `Lightning fast! ${reactionTime}ms! ⚡`;
+                    } else if (reactionTime < 300) {
+                        message = `Excellent! ${reactionTime}ms! 🎯`;
+                    } else if (reactionTime < 400) {
+                        message = `Good reflexes! ${reactionTime}ms! 👍`;
+                    } else if (reactionTime < 500) {
+                        message = `Not bad! ${reactionTime}ms! 😊`;
+                    } else {
+                        message = `${reactionTime}ms - Try to be faster! 🐌`;
+                    }
+                    showSpeechBubble(message, 4000);
+                }
+                
+                showTryAgain();
+            }
+        }
+        
+        function showTryAgain() {
+            setTimeout(() => {
+                tryAgainBtn.style.display = 'inline-block';
+            }, 1000);
+        }
+        
+        function resetGame() {
+            gameState = 'waiting';
+            clearTimeout(timeoutId);
+            resetGameAreaColor();
+            startBtn.style.display = 'inline-block';
+            tryAgainBtn.style.display = 'none';
+            showSpeechBubble('Ready for another round? 🎮', 2000);
+        }
+        
+        function setReactionColor(color) {
+            currentReactionColor = color;
+            
+            // Update active button
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-color="${color}"]`).classList.add('active');
+            
+            showSpeechBubble(`Reaction color set to ${color}! 🎨`, 2000);
+        }
+        
+        function setTheme(theme) {
+            currentTheme = theme;
+            
+            // Remove all theme classes
+            document.body.className = '';
+            
+            // Add new theme class
+            if (theme !== 'retro') {
+                document.body.classList.add(theme);
+            }
+            
+            // Update active button
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-theme="${theme}"]`).classList.add('active');
+            
+            showSpeechBubble(`Theme changed to ${theme}! ✨`, 2000);
+        }
+        
+        function applyReactionColor() {
+            const colorMap = {
+                green: { bg: '#003300', border: '#00ff00', shadow: 'rgba(0, 255, 0, 0.5)' },
+                red: { bg: '#330000', border: '#ff0040', shadow: 'rgba(255, 0, 64, 0.5)' },
+                blue: { bg: '#000033', border: '#0080ff', shadow: 'rgba(0, 128, 255, 0.5)' },
+                yellow: { bg: '#333300', border: '#ffff00', shadow: 'rgba(255, 255, 0, 0.5)' },
+                purple: { bg: '#330033', border: '#8000ff', shadow: 'rgba(128, 0, 255, 0.5)' }
+            };
+            
+            const colors = colorMap[currentReactionColor];
+            gameArea.style.background = colors.bg;
+            gameArea.style.borderColor = colors.border;
+            gameArea.style.boxShadow = `0 0 30px ${colors.shadow}`;
+            gameArea.classList.add('ready');
+        }
+        
+        function resetGameAreaColor() {
+            gameArea.classList.remove('ready');
+            gameArea.style.background = '';
+            gameArea.style.borderColor = '';
+            gameArea.style.boxShadow = '';
+        }
+        
+        // Add click event to character
+        character.addEventListener('click', handleClick);
+        
+        // Add keyboard support (spacebar)
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (gameState === 'waiting' || gameState === 'ready') {
+                    handleClick();
+                }
+            }
+        });
+        
+        // Initial message
+        setTimeout(() => {
+            showSpeechBubble('Ready to test your reflexes? 🎮', 3000);
+        }, 500);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a7d3a0f025bcca',t:'MTc1NDQxMjk3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
